@@ -7,6 +7,8 @@
  */
  
 #include <stdio.h>
+#include "daemon.h"
+#include "serverconfig.h"
 #include "utils.h"
 
 void printHelp(char *exename)
@@ -21,8 +23,54 @@ void printHelp(char *exename)
 	printerr("\t-c  Reloads all configuration files.\n");
 }
 
+void runDaemon(char *pidfilename, char *configfilename)
+{
+    serverconfig_t *cfg;
+    
+    cfg=loadConfig(configfilename);
+    
+    if(cfg==NULL)
+    {
+        cfg=genDefaultConfig();
+    }
+    
+    daemonize(pidfilename, cfg);
+}
+
+void runBackupJob(char *backupConfig)
+{
+    
+}
+
+void printJobStatus()
+{
+    
+}
+
+void printPluginStatus()
+{
+}
+
+void reloadConfig()
+{
+    
+}
+
 void handleArgs(int argc, char **argv)
 {
+    int i;
+    
+    char *filename1, *filename2;
+    char d, r, sj, sp, c;
+    
+    filename1=NULL;
+    filename2=NULL;
+    d=0;
+    r=0;
+    sj=0;
+    sp=0;
+    c=0;
+    
 	if(argc==1)
 	{
 		printHelp(argv[0]);
@@ -30,12 +78,79 @@ void handleArgs(int argc, char **argv)
 	
 	else
 	{
-		
+        //TODO: consider not manually handling args.
+		for(i=1;i<argc;i++)
+        {
+            if(!strcmp(argv[i], "-d"))
+            {
+                d=1;
+            }
+            
+            else if(!strcmp(argv[i], "-r"))
+            {
+                r=1;
+            }
+            
+            else if(!strcmp(argv[i], "-sj"))
+            {
+                sj=1;
+            }
+            
+            else if(!strcmp(argv[i], "-sp"))
+            {
+                sp=1;
+            }
+            
+            else if(!strcmp(argv[i], "-c"))
+            {
+                c=1;
+            }
+            
+            else
+            {
+                if(filename1!=NULL)
+                {
+                    filename2=argv[i];
+                }
+                
+                else
+                {
+                    filename1=argv[i];
+                }
+            }
+        }
+        
+        //Now dispatch based on the parameters given:
+        
+        if(d)
+        {
+            runDaemon(filename1, filename2);
+        }
+        
+        else if(r)
+        {
+            runBackupJob(filename1);
+        }
+        
+        else if(sp)
+        {
+            
+        }
+        
+        else if(sj)
+        {
+            
+        }
+        
+        else if(c)
+        {
+            
+        }
 	}
 }
 
 int main(int argc, char **argv)
 {
-	printf("hello world\n");
+	handleArgs(argc, argv);
 	return 0;
 }

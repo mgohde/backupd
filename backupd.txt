@@ -1,0 +1,1 @@
+./Release/main.c.o ./Release/utils.c.o ./Release/daemon.c.o ./Release/serverconfig.c.o ./Release/plugins.c.o

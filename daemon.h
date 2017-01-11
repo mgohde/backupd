@@ -6,13 +6,20 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+#include <pthread.h>
 #include <unistd.h>
 
 #include "utils.h"
+#include "plugins.h"
+#include "serverconfig.h"
+
+#define LISTEN_QUEUE_LEN=64
 
 //Starts the daemon process.
-void daemonize(char *pidfilename);
+void daemonize(char *pidfilename, serverconfig_t *cfg);
 
 //Does initialization and command server tasks.
-void serverstart(char *pidfilename);
+void serverstart(char *pidfilename, serverconfig_t *cfg);
 #endif
