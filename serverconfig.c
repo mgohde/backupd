@@ -18,6 +18,7 @@ serverconfig_t *loadConfig(char *filename)
     FILE *in;
     serverconfig_t *config;
     char *linebuf;
+    char *tokbuf;
     ssize_t linesize;
     
     in=fopen(filename, "r");
@@ -43,27 +44,27 @@ serverconfig_t *loadConfig(char *filename)
                 
                 if(!strcmp(tokbuf, "systemconfdir:"))
                 {
-                    config->systemConfFileDir=strdup(strtok(NULL, NULL));
+                    config->systemConfFileDir=strdup(strtok(NULL, " "));
                 }
                 
                 else if(!strcmp(tokbuf, "plugindir:"))
                 {
-                    config->pluginDir=strdup(strtok(NULL, NULL));
+                    config->pluginDir=strdup(strtok(NULL, " "));
                 }
                 
-                else if(!strcmp(tokbuf, "port:"))
+                else if(!strcmp(tokbuf, "socket:"))
                 {
-                    config->port=atoi(strtok(NULL, NULL));
+                    config->sockpath=strdup(strtok(NULL, " "));
                 }
                 
                 else if(!strcmp(tokbuf, "msglogfile"))
                 {
-                    config->msgLogPath=strdup(strtok(NULL, NULL));
+                    config->msgLogPath=strdup(strtok(NULL, " "));
                 }
                 
                 else if(!strcmp(tokbuf, "errlogfile"))
                 {
-                    config->errLogPath=strdup(strtok(NULL, NULL));
+                    config->errLogPath=strdup(strtok(NULL, " "));
                 }
             }
         }
@@ -101,11 +102,15 @@ void storeConfig(char *filename, serverconfig_t *cfg)
 void freeConfig(serverconfig_t **cfg)
 {
 	serverconfig_t *lcfg;
+    
+    lcfg=(*cfg);
 	
 	free(lcfg->systemConfFileDir);
 	free(lcfg->pluginDir);
     free(lcfg->errLogPath);
     free(lcfg->msgLogPath);
+    free(lcfg->sockpath);
 	free(lcfg);
+    
 	(*cfg)=NULL;
 }

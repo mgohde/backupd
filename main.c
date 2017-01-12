@@ -13,7 +13,7 @@
 
 void printHelp(char *exename)
 {
-	fprintf(stderr, "Usage: %s [option] [file]\n");
+	fprintf(stderr, "Usage: %s [option] [file]\n", exename);
 	printerr("Where [option] is one of the following:\n");
 	printerr("\t-d  Forks into a daemon process. [file] should be a PID file.\n");
 	printerr("\t-r  Attempts to run a backup job or update an existing config\n");
@@ -27,14 +27,22 @@ void runDaemon(char *pidfilename, char *configfilename)
 {
     serverconfig_t *cfg;
     
-    cfg=loadConfig(configfilename);
-    
-    if(cfg==NULL)
+    if(configfilename==NULL)
     {
         cfg=genDefaultConfig();
     }
     
-    daemonize(pidfilename, cfg);
+    else
+    {
+        cfg=loadConfig(configfilename);
+        
+        if(cfg==NULL)
+        {
+            cfg=genDefaultConfig();
+        }
+    }
+    
+    daemonize(pidfilename, &cfg);
 }
 
 void runBackupJob(char *backupConfig)

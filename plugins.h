@@ -25,4 +25,53 @@
 #ifndef PLUGINS_H
 #define PLUGINS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <dlfcn.h>
+
+typedef unsigned int plugindesc;
+
+#define PLUGIN_TYPE_AEP 1
+#define PLUGIN_TYPE_BEP 2
+
+//Define an Archive Extension Plugin
+typedef struct
+{
+    void *rawData;
+    char *name;
+    int (*canHandle)(char *type);
+    void (*init)();
+    int (*run)(char *inpath, char *outpath);
+} AEP;
+
+//Define a Backup Extension Plugin
+typedef struct
+{
+    void *rawData;
+    char *name;
+    int (*canHandle)(char *type);
+    int (*needsExtendedInit)();
+    void (*init)();
+    void (*extInit)(char *confFileName);
+    int (*run)(char *inpath, char *outpath, AEP *requestedArchive);
+} BEP;
+
+//(for now) Define plugin arrays for ease of implementation.
+//Later on, plugins descriptions should be stored in a linked list or equivalent.
+AEP *aepTab;
+size_t aepTabLen;
+size_t lastAvailableAEPEntry;
+
+BEP *bepTab;
+size_t bepTabLen;
+size_t lastAvailableBEPEntry;
+
+void initPlugins();
+int installPlugin(char *filename);
+
+AEP *getExtPlugin(plugindesc desc);
+plugindesc getExtPluginCanHandle(char *extstr);
+
+BEP *getBakPlugin(plugindesc desc);
+plugindesc getBakPluginCanHandle(char *extstr);
 #endif

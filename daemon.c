@@ -1,10 +1,13 @@
 #include "daemon.h"
 
-void daemonize(char *pidfilename, serverconfig_t *cfg)
+void daemonize(char *pidfilename, serverconfig_t **scfg)
 {
     pid_t pid, sid;
     FILE *pidfile;
     FILE *newstdout, *newstderr;
+    serverconfig_t *cfg;
+    
+    cfg=(*scfg);
     
     //Check if the PID file already exists:
     pidfile=fopen(pidfilename, "r");
@@ -26,7 +29,7 @@ void daemonize(char *pidfilename, serverconfig_t *cfg)
         pidfile=fopen(pidfilename, "w");
         fprintf(pidfile, "%d", pid);
         fclose(pidfile);
-        freeConfig(&cfg);
+        freeConfig(scfg);
         exit(EXIT_SUCCESS);
     }
 
@@ -64,14 +67,24 @@ void daemonize(char *pidfilename, serverconfig_t *cfg)
     stdout=newstdout;
     stderr=newstderr;
 
-    serverstart(pidfilename, cfg);
+    serverstart(pidfilename, scfg);
 }
 
-void serverstart(char *pidfilename, serverconfig_t *cfg)
+void serverstart(char *pidfilename, serverconfig_t **scfg)
 {
     int serversock;
-    int sockdesc;
+    int clientsock;
     struct sockaddr_un localaddr;
+    struct sockaddr clientaddr;
+    socklen_t addrlen;
+    char runserver;
+    serverconfig_t *cfg;
+    FILE *clientfile;
+    char *cliReq;
+    size_t cliReqSize;
+    
+    
+    cfg=(*scfg);
     
     serversock=socket(AF_UNIX, SOCK_STREAM, 0);
     
@@ -85,7 +98,7 @@ void serverstart(char *pidfilename, serverconfig_t *cfg)
     memset(&localaddr, 0, sizeof(struct sockaddr_un));
     
     localaddr.sun_family=AF_UNIX;
-    strncopy(localaddr.sun_path, cfg->sockpath, sizeof(localaddr.sun_path)-1);
+    strncpy(localaddr.sun_path, cfg->sockpath, sizeof(localaddr.sun_path)-1);
     
     if(bind(serversock, (struct sockaddr*) &localaddr, sizeof(struct sockaddr_un))==-1)
     {
@@ -95,10 +108,46 @@ void serverstart(char *pidfilename, serverconfig_t *cfg)
         exit(EXIT_FAILURE);
     }
     
-    if(listn(serversock, LISTEN_QUEUE_LEN)==-1)
+    if(listen(serversock, LISTEN_QUEUE_LEN)==-1)
     {
         printerr("ERROR: cannot listen to server socket.\n");
         freeConfig(&cfg);
         exit(EXIT_FAILURE);
     }
+    
+    runserver=1;
+    
+    while(runserver)
+    {
+        cliReq=NULL;
+        cliReqSize=0;
+        
+        addrlen=sizeof(struct sockaddr);
+        clientsock=accept(serversock, &clientaddr, &addrlen);
+        
+        clientfile=fdopen(clientsock, "w+");
+        
+        //Wait for a command:
+        getline(&cliReq, &cliReqSize, clientfile);
+        
+        //Write the command back:
+        if(!strcmp("EXIT\n", cliReq))
+        {
+            free(cliReq);
+            fclose(clientfile);
+            break;
+        }
+        
+        fprintf(clientfile, "%s", cliReq);
+        free(cliReq);
+        
+        fclose(clientfile);
+    }
+    
+    //Close and delete the server socket:
+    close(serversock);
+    remove(cfg->sockpath);
+    
+    //Now remove our pid file:
+    remove(pidfilename);
 }
