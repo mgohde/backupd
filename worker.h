@@ -9,6 +9,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "plugins.h"
+#include "backupconfig.h"
 
 typedef struct
 {
@@ -19,7 +20,8 @@ typedef struct
     pthread_t thread;
 } worker_t;
 
-void dispatch(FILE *client, int clientfd);
-void *backupKernel();
+int dispatch(char *confPath);
+void *backupKernel(backupconf_t *conf);
+void runFixedCfg(char *cfgpath);
 
 #endif

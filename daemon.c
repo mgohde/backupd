@@ -82,9 +82,12 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     FILE *clientfile;
     char *cliReq;
     size_t cliReqSize;
+    char *cmd, *arg;
     
     
     cfg=(*scfg);
+    
+    installAllPlugins(cfg);
     
     serversock=socket(AF_UNIX, SOCK_STREAM, 0);
     
@@ -129,13 +132,34 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
         
         //Wait for a command:
         getline(&cliReq, &cliReqSize, clientfile);
+        cmd=strtok(cliReq, " \t\n");
         
         //Write the command back:
-        if(!strcmp("EXIT\n", cliReq))
+        if(!strcmp(cmd, "EXIT"))
         {
             free(cliReq);
             fclose(clientfile);
             break;
+        }
+        
+        else if(!strcmp(cmd, "BACKUP"))
+        {
+            
+        }
+        
+        else if(!strcmp(cmd, "RELOADCFG"))
+        {
+            
+        }
+        
+        else if(!strcmp(cmd, ""))
+        {
+            
+        }
+        
+        else
+        {
+            fprintf(clientfile, "ERROR\n");
         }
         
         fprintf(clientfile, "%s", cliReq);

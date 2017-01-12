@@ -28,8 +28,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <dirent.h>
 
-typedef unsigned int plugindesc;
+#include "serverconfig.h"
+
+typedef int plugindesc;
 
 #define PLUGIN_TYPE_AEP 1
 #define PLUGIN_TYPE_BEP 2
@@ -39,9 +43,10 @@ typedef struct
 {
     void *rawData;
     char *name;
-    int (*canHandle)(char *type);
+    int (*canHandle)(char *extType);
     void (*init)();
-    int (*run)(char *inpath, char *outpath);
+    int (*run)(char *inpath, char *outfile);
+    const char *(*getExtension)();
 } AEP;
 
 //Define a Backup Extension Plugin
@@ -49,7 +54,7 @@ typedef struct
 {
     void *rawData;
     char *name;
-    int (*canHandle)(char *type);
+    int (*canHandle)(char *extType);
     int (*needsExtendedInit)();
     void (*init)();
     void (*extInit)(char *confFileName);
@@ -67,6 +72,8 @@ size_t bepTabLen;
 size_t lastAvailableBEPEntry;
 
 void initPlugins();
+void deInitPlugins();
+void installAllPlugins(serverconfig_t *cfg);
 int installPlugin(char *filename);
 
 AEP *getExtPlugin(plugindesc desc);

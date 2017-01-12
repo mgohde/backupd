@@ -10,6 +10,7 @@
 #include "daemon.h"
 #include "serverconfig.h"
 #include "utils.h"
+#include "plugins.h"
 
 void printHelp(char *exename)
 {
@@ -159,6 +160,23 @@ void handleArgs(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	handleArgs(argc, argv);
-	return 0;
+    int retV;
+    //handleArgs(argc, argv);
+    
+    //Attempt to load a plugin:
+    initPlugins();
+    retV=installPlugin("/home/mgohde/codeliteworkspace/backupd/Release/targz.so");
+    if(retV)
+    {
+        printf("Plugin install success!\n");
+    }
+    
+    else
+    {
+        printf("Failure!\n");
+    }
+    
+    printf("Can plugin handle targz? %d\n", aepTab[0].canHandle("targz"));
+    deInitPlugins();
+    return 0;
 }
