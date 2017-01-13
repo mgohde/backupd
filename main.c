@@ -69,7 +69,7 @@ void reloadConfig()
 
 void exitBackupd()
 {
-    
+    makeConnection(DEFAULT_SOCK_PATH, "EXIT", "dummytext");
 }
 
 void handleArgs(int argc, char **argv)
@@ -173,12 +173,17 @@ void handleArgs(int argc, char **argv)
         {
             exitBackupd();
         }
+        
+        else
+        {
+            printHelp(argv[0]);
+        }
 	}
 }
 
 int main(int argc, char **argv)
 {
-    int retV;
+    //int retV;
     handleArgs(argc, argv);
     
     //Attempt to load a plugin:

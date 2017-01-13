@@ -31,6 +31,7 @@ int makeConnection(char *sockPath, char *command, char *arg)
     //Now convert the file descriptor to a normal file:
     con=fdopen(clientSock, "r+");
     
+    fprintf(stdout, "About to send command: %s %s\n", command, arg);
     fprintf(con, "%s %s\n", command, arg);
     
     line=NULL;

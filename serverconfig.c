@@ -19,7 +19,7 @@ serverconfig_t *loadConfig(char *filename)
     serverconfig_t *config;
     char *linebuf;
     char *tokbuf;
-    ssize_t linesize;
+    size_t linesize;
     
     in=fopen(filename, "r");
 
@@ -33,7 +33,8 @@ serverconfig_t *loadConfig(char *filename)
     do
     {
         linebuf=NULL;
-        linesize=getline(&linebuf, NULL, in);
+        linesize=0;
+        linesize=getline(&linebuf, &linesize, in);
         
         if(linesize>0)
         {

@@ -45,7 +45,9 @@ void daemonize(char *pidfilename, serverconfig_t **scfg)
     }
     
     //TODO: error checking
-    chdir("/");
+    if(chdir("/"))
+    {
+    }
     
     //Attempt to open logs:
     newstdout=fopen(cfg->msgLogPath, "a");
@@ -82,11 +84,13 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     FILE *clientfile;
     char *cliReq;
     size_t cliReqSize;
+    ssize_t testReqSize;
     char *cmd, *arg;
     
     
     cfg=(*scfg);
     
+    initPlugins();
     installAllPlugins(cfg);
     
     serversock=socket(AF_UNIX, SOCK_STREAM, 0);
@@ -120,6 +124,8 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     
     runserver=1;
     
+    printf("Server now accepting connections...\n");
+    
     while(runserver)
     {
         cliReq=NULL;
@@ -128,64 +134,76 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
         addrlen=sizeof(struct sockaddr);
         clientsock=accept(serversock, &clientaddr, &addrlen);
         
-        clientfile=fdopen(clientsock, "w+");
+        clientfile=fdopen(clientsock, "r+");
         
         //Wait for a command:
-        cliReqSize=getline(&cliReq, NULL, clientfile);
+        testReqSize=getline(&cliReq, &cliReqSize, clientfile);
+        printf("Given line contents: %s\n", cliReq);
         cmd=strtok(cliReq, " \t\n");
-        arg=strtok(NULL, "\t\n");
+        arg=strtok(NULL, " \t\n");
         
-        //Write the command back:
-        if(!strcmp(cmd, "EXIT"))
+        if(cmd!=NULL)
         {
-            free(cliReq);
-            fclose(clientfile);
-            break;
-        }
-        
-        else if(!strcmp(cmd, "BACKUP"))
-        {
-            if(dispatch(arg))
+            //Write the command back:
+            if(!strcmp(cmd, "EXIT"))
             {
-                printf("Successfully dispatched backup job for config: %s\n", arg);
+                runserver=0;
+            }
+            
+            else if(!strcmp(cmd, "BACKUP"))
+            {
+                if(dispatch(arg))
+                {
+                    printf("Successfully dispatched backup job for config: %s\n", arg);
+                }
+                
+                else
+                {
+                    fprintf(stderr, "ERROR: Could not dispatch backup job for config: %s\n", arg);
+                }
+            }
+            
+            else if(!strcmp(cmd, "RELOADCFG"))
+            {
+                
+            }
+            
+            else if(!strcmp(cmd, "JOBSTATUS"))
+            {
+                
+            }
+            
+            else if(!strcmp(cmd, "PLUGINLIST"))
+            {
+                
             }
             
             else
             {
-                fprintf(stderr, "ERROR: Could not dispatch backup job for config: %s\n", arg);
+                fprintf(clientfile, "ERROR\n");
             }
         }
         
-        else if(!strcmp(cmd, "RELOADCFG"))
-        {
-            
-        }
+        fprintf(clientfile, "OK\n");
         
-        else if(!strcmp(cmd, "JOBSTATUS"))
+        if(cliReq!=NULL)
         {
-            
+            free(cliReq);
         }
-        
-        else if(!strcmp(cmd, "PLUGINLIST"))
-        {
-            
-        }
-        
-        else
-        {
-            fprintf(clientfile, "ERROR\n");
-        }
-        
-        fprintf(clientfile, "%s", cliReq);
-        free(cliReq);
         
         fclose(clientfile);
+        printf("Closed clientfile. Current runserver value? %d\n", runserver);
     }
     
     //Close and delete the server socket:
     close(serversock);
     remove(cfg->sockpath);
     
+    //Close output files:
+    fclose(stderr);
+    fclose(stdout);
+    
     //Now remove our pid file:
     remove(pidfilename);
+    deInitPlugins();
 }

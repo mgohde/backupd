@@ -7,6 +7,7 @@ backupconf_t *readBakConfig(char *filename)
     char *linebuf;
     char *tokbuf;
     size_t linelen;
+    ssize_t checkLen;
     
     if(filename==NULL)
     {
@@ -28,61 +29,64 @@ backupconf_t *readBakConfig(char *filename)
         linelen=0;
         linebuf=NULL;
         
-        linelen=getline(&linebuf, NULL, f);
+        checkLen=getline(&linebuf, &linelen, f);
         
-        if(linelen>0)
+        if(checkLen>0 && linebuf!=NULL)
         {
             if(linebuf[0]!='#')
             {
                 tokbuf=strtok(linebuf, " \n");
                 
-                if(!strcmp(tokbuf, "source:"))
+                if(tokbuf!=NULL)
                 {
-                    cfg->src=strdup(strtok(NULL, " \n"));
-                }
-                
-                else if(!strcmp(tokbuf, "dest:"))
-                {
-                    cfg->dest=strdup(strtok(NULL, " \n"));
-                }
-                
-                else if(!strcmp(tokbuf, "filetype:"))
-                {
-                    tokbuf=strtok(NULL, " \n");
-                    cfg->extension=getExtPluginCanHandle(tokbuf);
-                    
-                    if(cfg->extension==-1)
+                    if(!strcmp(tokbuf, "source:"))
                     {
-                        fprintf(stderr, "ERROR: Couldn't find plugin to handle extension %s\n", tokbuf);
-                        fprintf(stderr, "File: %s\n", filename);
-                        fclose(f);
-                        free(linebuf);
-                        return NULL;
+                        cfg->src=strdup(strtok(NULL, " \n"));
                     }
-                }
-                
-                else if(!strcmp(tokbuf, "backuptype:"))
-                {
-                    tokbuf=strtok(NULL, " \n");
-                    cfg->baktype=getBakPluginCanHandle(tokbuf);
                     
-                    if(cfg->baktype==-1)
+                    else if(!strcmp(tokbuf, "dest:"))
                     {
-                        fprintf(stderr, "ERROR: Couldn't find plugin to handle backup type %s\n", tokbuf);
-                        fprintf(stderr, "File: %s\n", filename);
-                        fclose(f);
-                        free(linebuf);
-                        return NULL;
+                        cfg->dest=strdup(strtok(NULL, " \n"));
+                    }
+                    
+                    else if(!strcmp(tokbuf, "filetype:"))
+                    {
+                        tokbuf=strtok(NULL, " \n");
+                        cfg->extension=getExtPluginCanHandle(tokbuf);
+                        
+                        if(cfg->extension==-1)
+                        {
+                            fprintf(stderr, "ERROR: Couldn't find plugin to handle extension %s\n", tokbuf);
+                            fprintf(stderr, "File: %s\n", filename);
+                            fclose(f);
+                            free(linebuf);
+                            return NULL;
+                        }
+                    }
+                    
+                    else if(!strcmp(tokbuf, "backuptype:"))
+                    {
+                        tokbuf=strtok(NULL, " \n");
+                        cfg->baktype=getBakPluginCanHandle(tokbuf);
+                        
+                        if(cfg->baktype==-1)
+                        {
+                            fprintf(stderr, "ERROR: Couldn't find plugin to handle backup type %s\n", tokbuf);
+                            fprintf(stderr, "File: %s\n", filename);
+                            fclose(f);
+                            free(linebuf);
+                            return NULL;
+                        }
                     }
                 }
             }        
         }
         
-        if(linelen!=-1)
+        if(linebuf!=NULL)
         {
             free(linebuf);
         }
-    } while(linelen!=0);
+    } while(checkLen>=0);
     
     fclose(f);
     

@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "plugins.h"
 #include "serverconfig.h"
+#include "worker.h"
 
 #define LISTEN_QUEUE_LEN 64
 

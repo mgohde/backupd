@@ -22,7 +22,7 @@ typedef struct wrkr
     struct wrkr *child, *parent;
 } worker_t;
 
-worker_t *root=NULL;
+//worker_t *root=NULL;
 
 int dispatch(char *confPath);
 void *backupKernel(void *conf);

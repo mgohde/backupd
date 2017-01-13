@@ -174,6 +174,7 @@ void installAllPlugins(serverconfig_t *cfg)
     char *buf;
     
     dirPtr=opendir(cfg->pluginDir);
+    printf("Opening dir.\n");
     
     if(dirPtr==NULL)
     {
@@ -184,10 +185,21 @@ void installAllPlugins(serverconfig_t *cfg)
     //TODO: Consider checking file extension to distinguish between sofiles and conf files.
     while((entry=readdir(dirPtr)))
     {
-        buf=(char*) malloc(sizeof(char)*(strlen(entry->d_name)+strlen(cfg->pluginDir)+100));
-        sprintf(buf, "%s/%s", cfg->pluginDir, entry->d_name);
-        installPlugin(buf);
-        free(buf);
+        fprintf(stderr, "Found possible plugin with name %s.\n", entry->d_name);
+        
+        //Check for special cases:
+        if(strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+        {
+            buf=(char*) malloc(sizeof(char)*(strlen(entry->d_name)+strlen(cfg->pluginDir)+100));
+            sprintf(buf, "%s/%s", cfg->pluginDir, entry->d_name);
+            installPlugin(buf);
+            free(buf);
+        }
+        
+        else
+        {
+            fprintf(stderr, "could not load %s\n", entry->d_name);
+        }
     }
     
     closedir(dirPtr);

@@ -13,6 +13,8 @@ void *backupKernel(void *conf)
     bep=getBakPlugin(cfg->baktype);
     
     bep->run(cfg->src, cfg->dest, aep);
+    
+    return NULL;
 }
 
 void runFixedCfg(char *cfgpath)
