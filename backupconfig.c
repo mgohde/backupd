@@ -6,7 +6,7 @@ backupconf_t *readBakConfig(char *filename)
     backupconf_t *cfg;
     char *linebuf;
     char *tokbuf;
-    size_t linesize;
+    size_t linelen;
     
     if(filename==NULL)
     {
@@ -28,9 +28,9 @@ backupconf_t *readBakConfig(char *filename)
         linelen=0;
         linebuf=NULL;
         
-        linesize=getline(&linebuf, NULL, f);
+        linelen=getline(&linebuf, NULL, f);
         
-        if(linesize>0)
+        if(linelen>0)
         {
             if(linebuf[0]!='#')
             {
@@ -78,7 +78,7 @@ backupconf_t *readBakConfig(char *filename)
             }        
         }
         
-        if(linesize!=-1)
+        if(linelen!=-1)
         {
             free(linebuf);
         }

@@ -11,17 +11,23 @@
 #include "plugins.h"
 #include "backupconfig.h"
 
-typedef struct
+typedef struct wrkr
 {
     char *src;
     char *dest;
     plugindesc archivePlugin;
     plugindesc backupPlugin;
     pthread_t thread;
+    
+    struct wrkr *child, *parent;
 } worker_t;
 
+worker_t *root=NULL;
+
 int dispatch(char *confPath);
-void *backupKernel(backupconf_t *conf);
+void *backupKernel(void *conf);
 void runFixedCfg(char *cfgpath);
+
+worker_t *createWorkerStruct(worker_t *parent, worker_t *child);
 
 #endif

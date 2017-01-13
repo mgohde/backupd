@@ -7,6 +7,7 @@
  */
  
 #include <stdio.h>
+
 #include "daemon.h"
 #include "serverconfig.h"
 #include "utils.h"
@@ -22,6 +23,7 @@ void printHelp(char *exename)
 	printerr("\t-sj Prints the status of all backup jobs.\n");
 	printerr("\t-sp Prints the status of all loaded plugins.\n");
 	printerr("\t-c  Reloads all configuration files.\n");
+    printerr("\t-x  Requests that backupd terminate.\n");
 }
 
 void runDaemon(char *pidfilename, char *configfilename)
@@ -48,7 +50,7 @@ void runDaemon(char *pidfilename, char *configfilename)
 
 void runBackupJob(char *backupConfig)
 {
-    
+    makeConnection(DEFAULT_SOCK_PATH, "BACKUP", backupConfig);
 }
 
 void printJobStatus()
@@ -65,12 +67,17 @@ void reloadConfig()
     
 }
 
+void exitBackupd()
+{
+    
+}
+
 void handleArgs(int argc, char **argv)
 {
     int i;
     
     char *filename1, *filename2;
-    char d, r, sj, sp, c;
+    char d, r, sj, sp, c, x;
     
     filename1=NULL;
     filename2=NULL;
@@ -79,6 +86,7 @@ void handleArgs(int argc, char **argv)
     sj=0;
     sp=0;
     c=0;
+    x=0;
     
 	if(argc==1)
 	{
@@ -113,6 +121,11 @@ void handleArgs(int argc, char **argv)
             else if(!strcmp(argv[i], "-c"))
             {
                 c=1;
+            }
+            
+            else if(!strcmp(argv[i], "-x"))
+            {
+                x=1;
             }
             
             else
@@ -155,15 +168,21 @@ void handleArgs(int argc, char **argv)
         {
             
         }
+        
+        else if(x)
+        {
+            exitBackupd();
+        }
 	}
 }
 
 int main(int argc, char **argv)
 {
     int retV;
-    //handleArgs(argc, argv);
+    handleArgs(argc, argv);
     
     //Attempt to load a plugin:
+    /*
     initPlugins();
     retV=installPlugin("/home/mgohde/codeliteworkspace/backupd/Release/targz.so");
     if(retV)
@@ -178,5 +197,6 @@ int main(int argc, char **argv)
     
     printf("Can plugin handle targz? %d\n", aepTab[0].canHandle("targz"));
     deInitPlugins();
+    */
     return 0;
 }

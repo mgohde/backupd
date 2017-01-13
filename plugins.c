@@ -145,7 +145,7 @@ AEP *getExtPlugin(plugindesc desc)
 {
     if(desc>-1)
     {
-        return aepTab[i];
+        return &aepTab[desc];
     }
     
     else
@@ -158,7 +158,7 @@ BEP *getBakPlugin(plugindesc desc)
 {
     if(desc>-1)
     {
-        return bepTab[i];
+        return &bepTab[desc];
     }
     
     else

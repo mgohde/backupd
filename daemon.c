@@ -131,8 +131,9 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
         clientfile=fdopen(clientsock, "w+");
         
         //Wait for a command:
-        getline(&cliReq, &cliReqSize, clientfile);
+        cliReqSize=getline(&cliReq, NULL, clientfile);
         cmd=strtok(cliReq, " \t\n");
+        arg=strtok(NULL, "\t\n");
         
         //Write the command back:
         if(!strcmp(cmd, "EXIT"))
@@ -144,7 +145,15 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
         
         else if(!strcmp(cmd, "BACKUP"))
         {
+            if(dispatch(arg))
+            {
+                printf("Successfully dispatched backup job for config: %s\n", arg);
+            }
             
+            else
+            {
+                fprintf(stderr, "ERROR: Could not dispatch backup job for config: %s\n", arg);
+            }
         }
         
         else if(!strcmp(cmd, "RELOADCFG"))
@@ -152,7 +161,12 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
             
         }
         
-        else if(!strcmp(cmd, ""))
+        else if(!strcmp(cmd, "JOBSTATUS"))
+        {
+            
+        }
+        
+        else if(!strcmp(cmd, "PLUGINLIST"))
         {
             
         }

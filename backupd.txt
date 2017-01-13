@@ -1,1 +1,1 @@
-./Release/main.c.o ./Release/utils.c.o ./Release/daemon.c.o ./Release/serverconfig.c.o ./Release/plugins.c.o ./Release/worker.c.o ./Release/plugins_targz.c.o
+./Debug/main.c.o ./Debug/utils.c.o ./Debug/daemon.c.o ./Debug/serverconfig.c.o ./Debug/plugins.c.o ./Debug/worker.c.o ./Debug/backupconfig.c.o
