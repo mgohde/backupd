@@ -11,6 +11,10 @@ void initPlugins()
     
     lastAvailableAEPEntry=0;
     lastAvailableBEPEntry=0;
+    
+    //Create and populate the backupd support function table:
+    supportStruct=(backupdsupport_t*) malloc(sizeof(backupdsupport_t));
+    supportStruct->getLastPathTok=&getLastPathTok;
 }
 
 void deInitPlugins()
@@ -30,6 +34,7 @@ void deInitPlugins()
     
     free(aepTab);
     free(bepTab);
+    free(supportStruct);
 }
 
 int installPlugin(char *filename)
@@ -77,12 +82,12 @@ int installPlugin(char *filename)
     {
         i=lastAvailableBEPEntry;
         
-        aepTab[i].rawData=plugin;
+        bepTab[i].rawData=plugin;
         
         bepTab[i].name=(*((char**) dlsym(plugin, "name")));
         printf("Plugin name: %s\n", bepTab[i].name);
         
-        bepTab[i].init=(void (*)()) dlsym(plugin, "init");
+        bepTab[i].init=(void (*)(backupdsupport_t*)) dlsym(plugin, "init");
         bepTab[i].extInit=(void (*)(char*)) dlsym(plugin, "extInit");
         bepTab[i].needsExtendedInit=(int (*)()) dlsym(plugin, "needsExtendedInit");
         bepTab[i].canHandle=(int (*)(char*)) dlsym(plugin, "canHandle");
@@ -97,7 +102,7 @@ int installPlugin(char *filename)
         
         else
         {
-            bepTab[i].init();
+            bepTab[i].init(supportStruct);
         }
     }
     
@@ -203,4 +208,25 @@ void installAllPlugins(serverconfig_t *cfg)
     }
     
     closedir(dirPtr);
+}
+
+//Begin plugin support functions:
+char *getLastPathTok(char *path)
+{
+    char *pathdup;
+    char *tmp1, *tmp2;
+    
+    pathdup=strdup(path);
+    
+    tmp2=strtok(pathdup, "/");
+    
+    while((tmp1=strtok(NULL, "/")))
+    {
+        tmp2=tmp1;
+    }
+    
+    tmp2=strdup(tmp2);
+    free(pathdup);
+    
+    return tmp2;
 }

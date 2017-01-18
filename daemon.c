@@ -80,12 +80,13 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     struct sockaddr clientaddr;
     socklen_t addrlen;
     char runserver;
-    serverconfig_t *cfg;
+    serverconfig_t *cfg, *tmpCfg;
     FILE *clientfile;
     char *cliReq;
     size_t cliReqSize;
     ssize_t testReqSize;
     char *cmd, *arg;
+    int reqStatus;
     
     
     cfg=(*scfg);
@@ -130,6 +131,7 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     {
         cliReq=NULL;
         cliReqSize=0;
+        reqStatus=1;
         
         addrlen=sizeof(struct sockaddr);
         clientsock=accept(serversock, &clientaddr, &addrlen);
@@ -165,12 +167,30 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
             
             else if(!strcmp(cmd, "RELOADCFG"))
             {
+                tmpCfg=loadConfig(arg);
                 
+                if(tmpCfg==NULL)
+                {
+                    reqStatus=0;
+                }
+                
+                else
+                {
+                    freeConfig(&cfg);
+                    cfg=tmpCfg;
+                }
             }
             
             else if(!strcmp(cmd, "JOBSTATUS"))
             {
                 
+            }
+            
+            else if(!strcmp(cmd, "RELOADPLUGINS"))
+            {
+                deInitPlugins();
+                initPlugins();
+                installAllPlugins(cfg);
             }
             
             else if(!strcmp(cmd, "PLUGINLIST"))
@@ -184,7 +204,15 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
             }
         }
         
-        fprintf(clientfile, "OK\n");
+        if(reqStatus)
+        {
+            fprintf(clientfile, "OK\n");
+        }
+        
+        else
+        {
+            fprintf(clientfile, "ERROR\n");
+        }
         
         if(cliReq!=NULL)
         {
@@ -195,6 +223,8 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
         printf("Closed clientfile. Current runserver value? %d\n", runserver);
     }
     
+    
+    
     //Close and delete the server socket:
     close(serversock);
     remove(cfg->sockpath);
@@ -202,6 +232,9 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     //Close output files:
     fclose(stderr);
     fclose(stdout);
+    
+    //Free some memory blocks and such:
+    freeConfig(&cfg);
     
     //Now remove our pid file:
     remove(pidfilename);

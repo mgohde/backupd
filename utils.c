@@ -6,7 +6,8 @@ int makeConnection(char *sockPath, char *command, char *arg)
     struct sockaddr_un addr;
     FILE *con;
     char *line;
-    size_t lineLen;
+    ssize_t lineLen;
+    size_t tmplen;
     
     clientSock=socket(AF_UNIX, SOCK_STREAM, 0);
     
@@ -35,8 +36,9 @@ int makeConnection(char *sockPath, char *command, char *arg)
     fprintf(con, "%s %s\n", command, arg);
     
     line=NULL;
-    lineLen=0;
-    lineLen=getline(&line, NULL, con);
+    tmplen=0;
+    lineLen=getline(&line, &tmplen, con);
+    fprintf(stdout, "Server response: %s\n", line);
     
     if(lineLen!=-1)
     {

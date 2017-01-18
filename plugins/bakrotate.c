@@ -24,7 +24,7 @@ int needsExtendedInit()
     return 0;
 }
 
-void init()
+void init(backupdsupport_t *supportStruct)
 {
     //Do nothing
 }
@@ -47,9 +47,10 @@ int run(char *inpath, char *outpath, AEP *requestedArchive)
     int curNum;
     FILE *otherf;
     
+    curNum=0;
     otherf=fopen("/usr/local/backupd/bakrotate.log", "w");
     fprintf(otherf, "[bakrotate]\tExecuting job with type %s for %s -> %s\n", " ", inpath, outpath);//, requestedArchive->getExtension());
-    fclose(otherf);
+    //fclose(otherf);
     
     //First, scan the output directory for the last file number used:
     d=opendir(outpath);
@@ -61,6 +62,7 @@ int run(char *inpath, char *outpath, AEP *requestedArchive)
     
     countFilename=(char*) malloc((strlen(LASTUSEDFILENAME)+strlen(outpath)+20)*sizeof(char));
     sprintf(countFilename, "%s/%s", outpath, LASTUSEDFILENAME);
+    fprintf(otherf, "countFilename: %s\n", countFilename);
     
     while((entry=readdir(d)))
     {
@@ -85,8 +87,8 @@ int run(char *inpath, char *outpath, AEP *requestedArchive)
     }
     
     outputFilename=(char*) malloc(sizeof(char)*(strlen(pathFilename)+strlen(outpath)+20));
-    sprintf(outputFilename, "%s/%s", outpath, pathFilename);
-    
+    sprintf(outputFilename, "%s/%s.%d", outpath, pathFilename, curNum);
+    fprintf(otherf, "outputFilename: %s\n", outputFilename);
     //TODO: Size estimation and rotation.
     
     requestedArchive->run(inpath, outputFilename);
@@ -98,4 +100,6 @@ int run(char *inpath, char *outpath, AEP *requestedArchive)
     free(inPathDup);
     free(countFilename);
     free(outputFilename);
+    fclose(f);
+    fclose(otherf);
 }

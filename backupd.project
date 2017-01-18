@@ -47,6 +47,7 @@
     <File Name="plugins/targz.c" ExcludeProjConfig="Debug;Release"/>
     <File Name="plugins/bakrotate.c" ExcludeProjConfig="Debug;Release"/>
     <File Name="plugins/Makefile" ExcludeProjConfig="Debug;Release"/>
+    <File Name="plugins/simple.c" ExcludeProjConfig="Debug"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

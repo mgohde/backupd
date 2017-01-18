@@ -14,12 +14,59 @@ void *backupKernel(void *conf)
     
     bep->run(cfg->src, cfg->dest, aep);
     
+    freeConfig(&cfg);
+    
     return NULL;
+}
+
+//Note: This kernel function should eventually be capable of recieving pthread_cancel requests.
+//Second note: this function should also scan for plugin reloads, etc.
+void *repeatedBackupKernel(void *conf)
+{
+    backupconf_t *cfg;
+    AEP *aep;
+    BEP *bep;
+    time_t curTime;
+    struct tm *usableTime;
+    
+    cfg=(backupconf_t*) conf;
+    
+    aep=getExtPlugin(cfg->extension);
+    bep=getBakPlugin(cfg->baktype);
+    
+    //Should be changed to respond to requests.
+    while(1)
+    {
+        curTime=time(NULL);
+        usableTime=localtime(&curTime);
+        
+        //Check the time thingy
+        if(1)
+        {
+            bep->run(cfg->src, cfg->dest, aep);
+        }
+        
+        free(usableTime);
+    }
 }
 
 void runFixedCfg(char *cfgpath)
 {
     
+}
+
+//Should be automatically called by dispatch() as necessary.
+int installTask(char *confPath)
+{
+    
+}
+
+int installRepeatedTasks(char *confDir)
+{
+    DIR *d;
+    struct dirent *e;
+    
+    d=opendir(confDir);
 }
 
 int dispatch(char *confPath)
@@ -33,6 +80,8 @@ int dispatch(char *confPath)
     
     if(cfg==NULL)
     {
+        fprintf(stderr, "ERROR: could not read given configuration file: %s\n", confPath);
+        fprintf(stderr, "       Was it passed with an absolute path?\n");
         return 0;
     }
     

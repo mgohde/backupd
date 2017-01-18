@@ -22,8 +22,39 @@ void printHelp(char *exename)
 	printerr("\t\tfile. [file] should be a configuration filename.\n");
 	printerr("\t-sj Prints the status of all backup jobs.\n");
 	printerr("\t-sp Prints the status of all loaded plugins.\n");
+    printerr("\t-p  Reloads all plugins.\n");
 	printerr("\t-c  Reloads all configuration files.\n");
     printerr("\t-x  Requests that backupd terminate.\n");
+}
+
+char *defSockPath=DEFAULT_SOCK_PATH;
+
+void reloadConfig(char *overrideSockPath)
+{
+    char *sockPath;
+    
+    sockPath=defSockPath;
+    
+    if(overrideSockPath!=NULL)
+    {
+        sockPath=overrideSockPath;
+    }
+    
+    makeConnection(sockPath, "RELOADCFG", "dummytext");
+}
+
+void reloadPlugins(char *overrideSockPath)
+{
+    char *sockPath;
+    
+    sockPath=defSockPath;
+    
+    if(overrideSockPath!=NULL)
+    {
+        sockPath=overrideSockPath;
+    }
+    
+    makeConnection(sockPath, "RELOADPLUGINS", "dummytext");
 }
 
 void runDaemon(char *pidfilename, char *configfilename)
@@ -62,11 +93,6 @@ void printPluginStatus()
 {
 }
 
-void reloadConfig()
-{
-    
-}
-
 void exitBackupd()
 {
     makeConnection(DEFAULT_SOCK_PATH, "EXIT", "dummytext");
@@ -77,7 +103,7 @@ void handleArgs(int argc, char **argv)
     int i;
     
     char *filename1, *filename2;
-    char d, r, sj, sp, c, x;
+    char d, r, sj, sp, c, x, p;
     
     filename1=NULL;
     filename2=NULL;
@@ -87,6 +113,7 @@ void handleArgs(int argc, char **argv)
     sp=0;
     c=0;
     x=0;
+    p=0;
     
 	if(argc==1)
 	{
@@ -166,12 +193,17 @@ void handleArgs(int argc, char **argv)
         
         else if(c)
         {
-            
+            reloadConfig(filename1);
         }
         
         else if(x)
         {
             exitBackupd();
+        }
+        
+        else if(p)
+        {
+            reloadPlugins(filename1);
         }
         
         else
