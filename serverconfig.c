@@ -10,6 +10,7 @@ serverconfig_t *genDefaultConfig()
     cfg->errLogPath=strdup(DEFAULT_ERR_LOG);
     cfg->msgLogPath=strdup(DEFAULT_MSG_LOG);
 	cfg->sockpath=strdup(DEFAULT_SOCK_PATH);
+    cfg->schedTabSize=DEFAULT_SCHED_TAB_SIZE;
 	return cfg;
 }
 
@@ -67,6 +68,11 @@ serverconfig_t *loadConfig(char *filename)
                 {
                     config->errLogPath=strdup(strtok(NULL, " "));
                 }
+                
+                else if(!strcmp(tokbuf, "schedtab:"))
+                {
+                    sscanf(strtok(NULL, " "), "%d", &config->schedTabSize);
+                }
             }
         }
         
@@ -96,6 +102,8 @@ void storeConfig(char *filename, serverconfig_t *cfg)
     fprintf(out, "# Message and error log paths:\n");
     fprintf(out, "msglogfile: %s\n", cfg->msgLogPath);
     fprintf(out, "errlogfile: %s\n", cfg->errLogPath);
+    fprintf(out, "# Maximum number of repeated time/date dependant jobs that can be scheduled:\n");
+    fprintf(out, "schedtab: %d\n", cfg->schedTabSize);
     
     fclose(out);
 }

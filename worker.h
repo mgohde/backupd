@@ -38,6 +38,13 @@ void *backupKernel(void *conf);
 void runFixedCfg(char *cfgpath);
 void threadTerminateCallback(pthread_t thread);
 
+//Functions for worker storage, etc.
 worker_t *createWorkerStruct(worker_t *parent, worker_t *child);
+void deleteWorkerStorage(worker_t **root);
+void addWorker(worker_t **root, worker_t *w);
 
+//Functions for backup task scheduling functionality:
+void initScheduler(int schedTabSize);
+int addSchedulerJob(backupconf_t *b);
+void *schedulerKernel(void *arg);
 #endif

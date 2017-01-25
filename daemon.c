@@ -87,8 +87,9 @@ void serverstart(char *pidfilename, serverconfig_t **scfg)
     ssize_t testReqSize;
     char *cmd, *arg;
     int reqStatus;
+    worker_t **rootNode;
     
-    
+    rootNode=NULL;
     cfg=(*scfg);
     
     initPlugins();

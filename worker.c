@@ -69,7 +69,7 @@ int installRepeatedTasks(char *confDir)
     d=opendir(confDir);
 }
 
-int dispatch(char *confPath)
+int dispatch(char *confPath, )
 {
     backupconf_t *cfg;
     pthread_t childthread;
@@ -100,4 +100,48 @@ int dispatch(char *confPath)
     }
     
     return 1;
+}
+
+/* The following functions implement a worker management data structure: */
+
+worker_t *createWorkerStruct(worker_t *parent, worker_t *child)
+{
+    worker_t *w;
+    
+    w=(worker_t *) malloc(sizeof(worker_t));
+    w->parent=parent;
+    w->child=child;
+    
+    return w;
+}
+
+void deleteWorkerStorage(worker_t **root)
+{
+    worker_t *w, *tmp;
+    
+    w=(*root);
+    
+    while(w!=NULL)
+    {
+        tmp=w->child;
+        free(w);
+        w=tmp;
+    }
+    
+    (*root)=NULL;
+}
+
+void addWorker(worker_t **root, worker_t *w)
+{
+    if(!(*root))
+    {
+        (*root)=w;
+    }
+    
+    else
+    {
+        (*root->parent)=w;
+        w->child=(*root);
+        (*root)=w;
+    }
 }

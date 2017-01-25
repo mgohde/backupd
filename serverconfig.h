@@ -10,6 +10,7 @@
 #define DEFAULT_ERR_LOG "/usr/local/backupd/error.log"
 #define DEFAULT_MSG_LOG "/usr/local/backupd/message.log"
 #define DEFAULT_SOCK_PATH "/usr/local/backupd/backupd.sock"
+#define DEFAULT_SCHED_TAB_SIZE 64
 
 //This structure contains all server configuration stuff.
 typedef struct
@@ -19,6 +20,7 @@ typedef struct
     char *errLogPath;
     char *msgLogPath;
     char *sockpath;
+    int schedTabSize;
 } serverconfig_t;
 
 serverconfig_t *loadConfig(char *filename);

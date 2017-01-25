@@ -1,6 +1,14 @@
 #ifndef DAEMON_H
 #define DAEMON_H
 
+/* daemon.h -- Definitions for the backupd daemon and server core.
+ * 
+ * The functions here:
+ *  1. Daemonize the process
+ *  2. Handle incoming connections on the server's communication socket.
+ *  3. Manage and act on all regularly scheduled tasks.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,4 +32,12 @@ void daemonize(char *pidfilename, serverconfig_t **scfg);
 
 //Does initialization and command server tasks.
 void serverstart(char *pidfilename, serverconfig_t **scfg);
+
+//Processes each accepted connection.
+//Returns 1 if the server should continue running, or 0 if it should terminate.
+int handleConnection();
+
+void initScheduler()
+//
+void *schedulerKernel(void *arg);
 #endif
