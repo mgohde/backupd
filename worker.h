@@ -24,12 +24,14 @@ typedef struct wrkr
     struct wrkr *child, *parent;
 } worker_t;
 
-typedef struct task
+//Encapsulates all data required of the scheduler.
+typedef struct
 {
-    //TODO: Implement proper task scheduling and such.
-} task_t;
-
-//worker_t *root=NULL;
+    backupconf_t **schedTab;
+    int schedTabLen;
+    int lastAllocatedSchedTabEntry;
+    pthread_t schedulerThread;
+} schedtab_t;
 
 int dispatch(char *confPath);
 int installTask(char *confPath);
@@ -44,7 +46,10 @@ void deleteWorkerStorage(worker_t **root);
 void addWorker(worker_t **root, worker_t *w);
 
 //Functions for backup task scheduling functionality:
-void initScheduler(int schedTabSize);
-int addSchedulerJob(backupconf_t *b);
+schedtab_t *initScheduler(int schedTabSize);
+int addSchedulerJob(backupconf_t *b, schedtab_t *tab);
 void *schedulerKernel(void *arg);
+int startScheduler(schedtab_t *tab);
+void deleteSchedTab(schedtab_t **tab);
+
 #endif

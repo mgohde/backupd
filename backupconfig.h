@@ -12,9 +12,16 @@ typedef struct
 {
     char *src, *dest;
     plugindesc extension, baktype;
-    //TODO: add fields for task scheduling and such.
+    
+    //TODO: consider whether fields for backup configuration are good enough.
+    int hour;
+    int minute;
+    unsigned int dayOfMonth;
 } backupconf_t;
 
+backupconf_t *genBakConfigStruct();
 backupconf_t *readBakConfig(char *filename);
+
+void freeBakConfig(backupconf_t **cfg);
 
 #endif

@@ -14,7 +14,7 @@ void *backupKernel(void *conf)
     
     bep->run(cfg->src, cfg->dest, aep);
     
-    freeConfig(&cfg);
+    freeBakConfig(&cfg);
     
     return NULL;
 }
@@ -58,18 +58,57 @@ void runFixedCfg(char *cfgpath)
 //Should be automatically called by dispatch() as necessary.
 int installTask(char *confPath)
 {
-    
+    return 0;
 }
 
+//Reads through the repeated task directory, then
+//attempts to install all configuration files present.
 int installRepeatedTasks(char *confDir)
 {
     DIR *d;
     struct dirent *e;
+    char *tmp;
+    char *tok1, *tok2;
+    char *confPath;
     
     d=opendir(confDir);
+    
+    while((e=readdir(d)))
+    {
+        tmp=strdup(e->d_name);
+        
+        tok1=strtok(tmp, ".");
+        tok2=strtok(NULL, ".");
+        
+        if(tok2!=NULL)
+        {
+            if(!strcmp(tok2, "conf"))
+            {
+                confPath=(char*) malloc(sizeof(char) * (strlen(tok2)+strlen(confDir)+10));
+                
+                if(confDir[strlen(confDir)-1]=='/')
+                {
+                    sprintf(confPath, "%s%s", confDir, e->d_name);
+                }
+                
+                else
+                {
+                    sprintf(confPath, "%s/%s", confDir, e->d_name);
+                }
+                
+                installTask(confPath);
+                
+                free(confPath);
+            }
+        }
+        
+        free(tmp);
+    }
+    
+    return 1;
 }
 
-int dispatch(char *confPath, )
+int dispatch(char *confPath)
 {
     backupconf_t *cfg;
     pthread_t childthread;
@@ -140,8 +179,68 @@ void addWorker(worker_t **root, worker_t *w)
     
     else
     {
-        (*root->parent)=w;
+        (*root)->parent=w;
         w->child=(*root);
         (*root)=w;
     }
+}
+
+schedtab_t *initScheduler(int schedTabSize)
+{
+    schedtab_t *retTab;
+    
+    retTab=(schedtab_t*) malloc(sizeof(schedtab_t));
+    retTab->schedTabLen=schedTabSize;
+    retTab->schedTab=(backupconf_t **) malloc(sizeof(backupconf_t*)*schedTabSize);
+    retTab->lastAllocatedSchedTabEntry=0;
+    
+    return retTab;
+}
+
+int startScheduler(schedtab_t *tab)
+{
+    return pthread_create(&(tab->schedulerThread), NULL, schedulerKernel, tab);
+}
+
+int addSchedulerJob(backupconf_t *b, schedtab_t *tab)
+{
+    int retV;
+    
+    retV=0;
+    
+    if(tab->lastAllocatedSchedTabEntry>=tab->schedTabLen)
+    {
+        return 0;
+    }
+    
+    else
+    {
+        tab->schedTab[tab->lastAllocatedSchedTabEntry]=b;
+        tab->lastAllocatedSchedTabEntry++;
+        
+        return 1;
+    }
+}
+
+void *schedulerKernel(void *arg)
+{
+    //TODO: implement scheduler kernel logic and such.
+    return NULL;
+}
+
+void deleteSchedTab(schedtab_t **tab)
+{
+    int i;
+    schedtab_t *localT;
+    
+    localT=(*tab);
+    
+    for(i=0;i<localT->lastAllocatedSchedTabEntry;i++)
+    {
+        freeBakConfig(&(localT->schedTab[i]));
+    }
+    
+    free(localT->schedTab);
+    free((*tab));
+    (*tab)=NULL;
 }

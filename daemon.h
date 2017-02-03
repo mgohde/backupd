@@ -37,7 +37,5 @@ void serverstart(char *pidfilename, serverconfig_t **scfg);
 //Returns 1 if the server should continue running, or 0 if it should terminate.
 int handleConnection();
 
-void initScheduler()
-//
 void *schedulerKernel(void *arg);
 #endif

@@ -52,3 +52,13 @@ int makeConnection(char *sockPath, char *command, char *arg)
     
     return 0;
 }
+
+unsigned int setBit(int pos)
+{
+    unsigned int dest;
+    
+    dest=1;
+    dest=dest<<pos;
+    
+    return dest;
+}

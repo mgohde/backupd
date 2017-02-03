@@ -1,11 +1,24 @@
 #include "backupconfig.h"
 
+backupconf_t *genBakConfigStruct()
+{
+    backupconf_t *cfg;
+    
+    cfg=(backupconf_t*) malloc(sizeof(backupconf_t));
+    memset((void*) cfg, 0, sizeof(backupconf_t));
+    
+    return cfg;
+}
+
 backupconf_t *readBakConfig(char *filename)
 {
     FILE *f;
     backupconf_t *cfg;
     char *linebuf;
     char *tokbuf;
+    char *secondaryTokBuf;
+    char *secondaryTok;
+    int tmpInt;
     size_t linelen;
     ssize_t checkLen;
     
@@ -21,7 +34,8 @@ backupconf_t *readBakConfig(char *filename)
         return NULL;
     }
     
-    cfg=(backupconf_t*) malloc(sizeof(backupconf_t));
+    //cfg=(backupconf_t*) malloc(sizeof(backupconf_t));
+    cfg=genBakConfigStruct();
     linebuf=NULL;
     
     do
@@ -78,6 +92,32 @@ backupconf_t *readBakConfig(char *filename)
                             return NULL;
                         }
                     }
+                    
+                    else if(!strcmp(tokbuf, "hour:"))
+                    {
+                        tokbuf=strtok(NULL, " \n");
+                        sscanf(tokbuf, "%d", &cfg->hour);
+                    }
+                    
+                    else if(!strcmp(tokbuf, "minute:"))
+                    {
+                        tokbuf=strtok(NULL, " \n");
+                        sscanf(tokbuf, "%d", &cfg->minute);
+                    }
+                    
+                    else if(!strcmp(tokbuf, "days:"))
+                    {
+                        secondaryTokBuf=strdup(strtok(NULL, " \n"));
+                        
+                        secondaryTok=strtok(secondaryTokBuf, ",");
+                        do
+                        {
+                            sscanf(secondaryTok, "%d", &tmpInt);
+                            cfg->dayOfMonth=cfg->dayOfMonth|setBit(tmpInt);
+                        } while((secondaryTok=strtok(NULL, ",")));
+                        
+                        free(secondaryTokBuf);
+                    }
                 }
             }        
         }
@@ -91,4 +131,16 @@ backupconf_t *readBakConfig(char *filename)
     fclose(f);
     
     return cfg;
+}
+
+void freeBakConfig(backupconf_t **cfg)
+{
+    backupconf_t *localCfg;
+    
+    localCfg=(*cfg);
+    free(localCfg->src);
+    free(localCfg->dest);
+    free((*cfg));
+    
+    (*cfg)=NULL;
 }

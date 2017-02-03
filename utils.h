@@ -17,4 +17,6 @@
 //Sends a command to a running backup process.
 int makeConnection(char *sockPath, char *command, char *arg);
 
+unsigned int setBit(int pos);
+
 #endif
