@@ -15,6 +15,7 @@ void initPlugins()
     //Create and populate the backupd support function table:
     supportStruct=(backupdsupport_t*) malloc(sizeof(backupdsupport_t));
     supportStruct->getLastPathTok=&getLastPathTok;
+    supportStruct->searchPlugin=&searchUtilityFunction;
 }
 
 void deInitPlugins()
@@ -157,6 +158,11 @@ AEP *getExtPlugin(plugindesc desc)
     {
         return NULL;
     }
+}
+
+AEP *searchUtilityFunction(char *extstr)
+{
+    return getExtPlugin(getExtPluginCanHandle(extstr));
 }
 
 BEP *getBakPlugin(plugindesc desc)

@@ -48,6 +48,7 @@
     <File Name="plugins/bakrotate.c" ExcludeProjConfig="Debug;Release"/>
     <File Name="plugins/Makefile" ExcludeProjConfig="Debug;Release"/>
     <File Name="plugins/simple.c" ExcludeProjConfig="Debug"/>
+    <File Name="plugins/getfreespace.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

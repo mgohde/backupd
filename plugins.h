@@ -38,11 +38,6 @@ typedef int plugindesc;
 #define PLUGIN_TYPE_AEP 1
 #define PLUGIN_TYPE_BEP 2
 
-typedef struct
-{
-    char *(*getLastPathTok)(char *path);
-} backupdsupport_t;
-
 //Define an Archive Extension Plugin
 typedef struct
 {
@@ -53,6 +48,12 @@ typedef struct
     int (*run)(char *inpath, char *outfile);
     const char *(*getExtension)();
 } AEP;
+
+typedef struct
+{
+    char *(*getLastPathTok)(char *path);
+    AEP *(*searchPlugin)(char* ext);
+} backupdsupport_t;
 
 //Define a Backup Extension Plugin
 typedef struct
@@ -83,6 +84,8 @@ int installPlugin(char *filename);
 
 AEP *getExtPlugin(plugindesc desc);
 plugindesc getExtPluginCanHandle(char *extstr);
+//This function should allow plugins to use other plugins for additional functionality.
+AEP *searchUtilityFunction(char *extstr);
 
 BEP *getBakPlugin(plugindesc desc);
 plugindesc getBakPluginCanHandle(char *extstr);

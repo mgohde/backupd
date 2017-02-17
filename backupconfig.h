@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "utils.h"
 #include "plugins.h"
 
 typedef struct
